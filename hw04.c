@@ -11,19 +11,37 @@ OR if the file cannot be interpreted as a binary file of vectors
 EXIT_FAILURE.  Else, it returns EXIT_SUCCESS.  */
 int count_vectors_in_file(char * filename, int * vector_count) {
     // Open the file in "rb" (read binary) mode
+    FILE *file = fopen(filename, "rb");
+    if (file == NULL) {
+        return EXIT_FAILURE;
+    }
 
     // Set up a buffer of three integers to read to,
     // a count of how many integers are read in on the last pass,
     // and a count of how many times three integers have been read in
+    int buffer[3];
+    int read_integers = 0;
+    int read_vectors = 0;
 
     // While not encountering the end of the file or receiving an error,
     // call f_read with the buffer to retrieve three integers.  Update
     // the counts.
+    while((read_integers = fread(buffer, sizeof(int), 3, file)) == 3) {
+        read_vectors++;
+    }
 
+    *vector_count = read_vectors;
+    
+    fclose(file);
+    
     // If the last pass reached the end of the file and retrieved no integers
     // (rather than a stray one or two) and didn't throw an error, return EXIT_SUCCESS
     // Else, return EXIT_FAILURE
-    return EXIT_SUCCESS;
+    if(fgetc(file) == EOF && read_integers == 0) {
+        return EXIT_SUCCESS;
+    } else {
+        return EXIT_FAILURE;
+    }
 }
 
 /* The second function you write allocates space for the vectors
@@ -38,14 +56,38 @@ In the event of a file read failure or memory allocation failure (both
 are unlikely), you can return NULL.*/
 struct vector * read_vectors_from_file(char * filename, int vector_count) {
     // Open the file in "rb" (read binary) mode
+    FILE *file = fopen(filename, "rb");
+    if (file == NULL) {
+        return NULL;
+    }
 
     // Allocate sufficient space for all of the vector structs
-
+    struct vector *vector_list = malloc(sizeof(struct vector) * vector_count);
+    if (vector_list == NULL) {
+        fclose(file);
+        return NULL;
+    }
+    
     // Read in all the integers from the file.  Place each
+    int *vector = malloc(sizeof(int) * 3 * vector_count);
+    if (vector == NULL) {
+        free(vector_list);
+        fclose(file);
+        return NULL;
+    }
+    
+    fread(vector, sizeof(int), 3 * vector_count, file);
     // set into the x-, y-, and z-coordinates of a vector in the list
-
+    for(int i = 0; i < vector_count; i++) {
+        vector_list[i].x = vector[3 * i];
+        vector_list[i].y = vector[3 * i + 1];
+        vector_list[i].z = vector[3 * i + 2];
+    }
+    
+    free(vector);
+    fclose(file);
     // Return the list of vectors
-    return NULL;
+    return vector_list;
 }
 
 /* The third function you write takes in two pointers of type
@@ -75,8 +117,17 @@ has length 'vector_count') to a binary file at 'filename'.  If the
 file cannot be opened, it returns EXIT_FAILURE. */
 int write_vectors_to_file(char * filename, struct vector * vector_list, int vector_count) {
     // Open the file in "wb" (write binary) mode
+    FILE *file = fopen(filename, "wb");
+    if (file == NULL) {
+        return EXIT_FAILURE;
+    }
 
     // Write the coordinates of each vector to the binary file
+    for(int i = 0; i < vector_count; i++) {
+        fwrite(&vector_list[i].x, sizeof(int), 1, file);
+        fwrite(&vector_list[i].y, sizeof(int), 1, file);
+        fwrite(&vector_list[i].z, sizeof(int), 1, file);
+    }
     
     return EXIT_SUCCESS;
 }
