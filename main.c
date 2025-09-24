@@ -21,8 +21,10 @@ int main(int argc, char * * argv) {
 
     if (write_vectors_to_file(argv[2], vector_list, vector_count)) {
         fprintf(stderr, "Error, unable to write to output file.\n");
+        free(vector_list);
         return EXIT_FAILURE;
     }
 
+    free(vector_list);
     return EXIT_SUCCESS;
 }
