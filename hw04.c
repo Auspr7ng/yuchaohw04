@@ -105,14 +105,17 @@ of using qsort and a warning about comparison functions.*/
 int compare_vectors(const void* a, const void* b) {
     const struct vector* vec_a = (const struct vector*)a;
     const struct vector* vec_b = (const struct vector*)b;
-
+    
     if (vec_a->x != vec_b->x) {
-        return vec_a->x - vec_b->x;
+        return (vec_a->x > vec_b->x) ? 1 : -1;
     }
     if (vec_a->y != vec_b->y) {
-        return vec_a->y - vec_b->y;
+        return (vec_a->y > vec_b->y) ? 1 : -1;
     }
-    return vec_a->z - vec_b->z;
+    if (vec_a->z != vec_b->z) {
+        return (vec_a->z > vec_b->z) ? 1 : -1;
+    }
+    return 0;
 }
 
 /* The fourth function calls qsort with the appropriate
