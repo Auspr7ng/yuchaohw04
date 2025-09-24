@@ -142,5 +142,6 @@ int write_vectors_to_file(char * filename, struct vector * vector_list, int vect
     }
     
     fclose(file);
+    free(vector_list);
     return EXIT_SUCCESS;
 }
