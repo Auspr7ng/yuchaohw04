@@ -32,14 +32,14 @@ int count_vectors_in_file(char * filename, int * vector_count) {
 
     *vector_count = read_vectors;
     
-    fclose(file);
-    
     // If the last pass reached the end of the file and retrieved no integers
     // (rather than a stray one or two) and didn't throw an error, return EXIT_SUCCESS
     // Else, return EXIT_FAILURE
-    if(fgetc(file) == EOF && read_integers == 0) {
+    if(read_integers == 0) {
+        fclose(file);
         return EXIT_SUCCESS;
     } else {
+        fclose(file);
         return EXIT_FAILURE;
     }
 }
@@ -103,7 +103,16 @@ This function is meant to be sent to qsort - see
 https://en.cppreference.com/w/c/algorithm/qsort for an example
 of using qsort and a warning about comparison functions.*/
 int compare_vectors(const void* a, const void* b) {
-    return 0;
+    const struct vector* vec_a = (const struct vector*)a;
+    const struct vector* vec_b = (const struct vector*)b;
+
+    if (vec_a->x != vec_b->x) {
+        return vec_a->x - vec_b->x;
+    }
+    if (vec_a->y != vec_b->y) {
+        return vec_a->y - vec_b->y;
+    }
+    return vec_a->z - vec_b->z;
 }
 
 /* The fourth function calls qsort with the appropriate
@@ -129,5 +138,6 @@ int write_vectors_to_file(char * filename, struct vector * vector_list, int vect
         fwrite(&vector_list[i].z, sizeof(int), 1, file);
     }
     
+    fclose(file);
     return EXIT_SUCCESS;
 }
